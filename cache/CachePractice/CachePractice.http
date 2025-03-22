@@ -1,0 +1,11 @@
+@CachePractice_HostAddress = http://localhost:5209
+
+GET {{CachePractice_HostAddress}}/todos/
+Accept: application/json
+
+###
+
+GET {{CachePractice_HostAddress}}/todos/1
+Accept: application/json
+
+###
