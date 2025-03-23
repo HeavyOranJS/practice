@@ -1,41 +1,24 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+var sampleTodos = new Todo[] {
+    new(1, "Walk the dog"),
+    new(2, "Do the dishes", DateOnly.FromDateTime(DateTime.Now)),
+    new(3, "Do the laundry", DateOnly.FromDateTime(DateTime.Now.AddDays(1))),
+    new(4, "Clean the bathroom"),
+    new(5, "Clean the car", DateOnly.FromDateTime(DateTime.Now.AddDays(2)))
 };
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+var todosApi = app.MapGroup("/todos");
+todosApi.MapGet("/", () => sampleTodos);
+todosApi.MapGet("/{id:int}",
+    (int id) => sampleTodos.FirstOrDefault(todo => todo.Id == id) is { } result
+        ? Results.Ok(result)
+        : Results.NotFound());
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+public record Todo(int Id, string? Title, DateOnly? DueBy = null, bool IsComplete = false);
